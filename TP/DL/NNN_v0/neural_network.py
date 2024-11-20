@@ -86,11 +86,13 @@ class NeuralNetwork:
                 x_batch, y_batch = next(batches)
 
                 # calculate output of the network for the given input
-                
+                y_predit = self.forward(x_batch)
                 # backpropagate the error through the whole network
-                
+                self.backpropagation(y_predit, y_batch)
                 # update the weights and biases of the network
-                
+                self.update_parameters()
+
+
                 timings.append(perf_counter() - start)
 
                 if batch % 100 == 0:
@@ -128,12 +130,10 @@ class NeuralNetwork:
         """
         
         # compute deltaE (TD notation)
-        deltaE = self.cost_function.derivative(y, expected_output)
-        # propagate the error from the last layer
-        #delta_i = self.layers[-1].propagate_backward(deltaE)
-        delta_i=self.cost_function.compute_derivative(y, expected_output)
+        deltaE = self.cost_function.compute_derivative(y, expected_output)
+        delta_i = deltaE  
         # call recursive deltas from before last to first
-        for layer in self.layers[-2::-1]:
+        for layer in self.layers[-1::-1]:
             delta_i = layer.propagate_backward(delta_i)
 
     def update_parameters(self) -> None:
@@ -157,7 +157,10 @@ class NeuralNetwork:
         :return: a float between 0 an 1 measuring the accuracy of the network
         """
 
-        return 0
+        classes_predites=self.predict(x)
+        classes_reelles=np.argmax(y, axis=1)
+
+        return np.mean(classes_predites==classes_reelles)
         
     def predict(self, x: np.array) -> np.array:
         """
@@ -172,10 +175,10 @@ class NeuralNetwork:
             x = x[np.newaxis, ...]
 
         # forward x to the network
-        
+        y_predit = self.forward(x)
         # get best output neurons
-        classification_result = -1
-        
+        classification_result = np.argmax(y_predit, axis=1) #y_predit de taille n (nbr de données en inférence)*10
+
         return classification_result
 
     def initialize_architecture(self, architecture: dict) -> None:
@@ -199,4 +202,3 @@ class NeuralNetwork:
                 self.layers[-1].init_layer() # init weights
         
         self.classes = architecture["classes"]
-

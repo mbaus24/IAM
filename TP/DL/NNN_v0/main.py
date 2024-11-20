@@ -58,4 +58,3 @@ print("\nAccuracy on test dataset:", neural_network.evaluate(x_test, y_test) * 1
 plt.imshow(np.reshape(x_test[100], (28, 28)), cmap="gray")
 plt.title("predicted as " + str(neural_network.predict(x_test[100])))
 plt.show()
-

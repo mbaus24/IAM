@@ -37,10 +37,10 @@ def download_data():
     """Download dataset in pkl.gz format"""
     
     try:
-        f = gzip.open('data/mnist.pkl.gz', 'rb')
+        f = gzip.open('C:/Users/bausm/OneDrive/Documentos/IAM/TP/DL/NNN_v0/data/mnist.pkl.gz', 'rb')
     except:
         print("downloading MNIST")
-        urlretrieve("https://pageperso.lis-lab.fr/stephane.ayache/mnist.pkl.gz", "data/mnist.pkl.gz")
+        urlretrieve("https://pageperso.lis-lab.fr/stephane.ayache/mnist.pkl.gz", "/TP/DL/NNN_v0/data/mnist.pkl.gz")
         f = gzip.open('data/mnist.pkl.gz', 'rb')
     
     training_data, validation_data, test_data = cPickle.load(f, encoding="latin1")

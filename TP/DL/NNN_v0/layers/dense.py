@@ -39,9 +39,9 @@ class Dense:
         :return: an array containing the output vector for each input vector
         """
 
-        self.x = 0
-        self.a = 0
-        self.z = 0
+        self.x = x
+        self.a = x @ self.weights.T + self.biases
+        self.z = self.activation_function.compute(self.a)
 
         return self.z
 
@@ -54,11 +54,13 @@ class Dense:
         """
         
         # compute delta_i from equations of backpropagation
-        delta_i = 0
+        delta_i = (error_from_next * self.activation_function.compute_derivative(self.a))
         
+        dW = np.einsum('bi,bj->bij', delta_i, self.x)
+
         # compute weights and biases gradients
-        self.weights_gradient = 0
-        self.biases_gradient = 0
+        self.weights_gradient = np.mean(dW, axis=0) #np.mean parce que batch, sur l'axe 0, celui des batchs
+        self.biases_gradient = np.mean(delta_i, axis=0)
 
         return delta_i @ self.weights
 

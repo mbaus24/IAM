@@ -1,0 +1,95 @@
+# Exercice 1
+
+### Identifiez la définition des états que la souris voit. À quoi correspond chaque état ? Combien y a-t-il d’états?
+
+```python
+def calculate_state(self):
+        def cell_value(cell):
+            if cat.cell is not None and (cell.x == cat.cell.x and cell.y == cat.cell.y):
+                return 3
+            elif cheese.cell is not None and (cell.x == cheese.cell.x and cell.y == cheese.cell.y):
+                return 2
+            else:
+                return 1 if cell.wall else 0
+
+             dirs = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+        return tuple([cell_value(world.get_relative_cell(self.cell.x + dir[0], self.cell.y + dir[1])) for dir in dirs])
+
+```
+Il y a 8 cases adjacentes à la souris, pouvant prendre des valeurs de 0 à 3. 0 si la case est un mur, 1 si la case est vide, 2 si la case contient le fromage et 3 si la case contient le chat. Il y a donc 4^8 = **65536** états possibles.
+
+### Quelle est la taille de l’ensemble des paramètres (s,a) sur lequel est définie la fonction q ?
+
+La fonction q est définie sur l'ensemble des états et des actions possibles. Il y a 4^8 états possibles et 4 actions possibles (haut, bas, gauche, droite + diagonale + sur place). La taille de l'ensemble des paramètres est donc 4^8 * 9 = **589824**
+
+### Programmez Sarsa et Expected Sarsa dans ce contexte
+
+```python
+    class Sarsa:
+    """
+    Sarsa:
+        Q(s, a) += alpha * (reward(s,a) + gamma * Q(s', a') - Q(s,a))
+
+        * alpha is the learning rate.
+        * gamma is the value of the future reward.
+    It use the best next choice of utility in later state to update the former state.
+    """
+    def __init__(self, actions, alpha=cfg.alpha, gamma=cfg.gamma, epsilon=cfg.epsilon):
+        self.q = {}
+        self.alpha = alpha
+        self.gamma = gamma
+        self.actions = actions  # collection of choices
+        self.epsilon = epsilon  # exploration constant
+
+    # Get the utility of an action in certain state, default is 0.0.
+    def get_utility(self, state, action):
+        return self.q.get((state, action), 0.0)
+
+    # When in certain state, find the best action while explore new grid by chance.
+    def choose_action(self, state):
+        if random.random() < self.epsilon:
+            action = random.choice(self.actions)
+        else:
+            q = [self.get_utility(state, act) for act in self.actions]
+            max_utility = max(q)
+            # In case there're several state-action max values
+            # we select a random one among them
+            if q.count(max_utility) > 1:
+                best_actions = [self.actions[i] for i in range(len(self.actions)) if q[i] == max_utility]
+                action = random.choice(best_actions)
+            else:
+                action = self.actions[q.index(max_utility)]
+        return action
+
+    # learn
+    def learn(self, state1, action, state2, reward):
+        old_utility = self.q.get((state1, action), None)
+        if old_utility is None:
+            self.q[(state1, action)] = reward
+
+        # update utility
+        else:
+            a = self.choose_action(state2)
+            # next_max_utility = max([self.get_utility(state2, a) for a in self.actions])
+            self.q[(state1, action)] = old_utility + self.alpha * (reward + self.gamma * [self.get_utility(state2, a)  - old_utility)
+```
+Comme précédement, on remplace la fonction learn (objectif)
+```python
+else:
+     expected_value = sum([self.get_utility(state2, a) for a in self.actions]) / len(self.actions)
+            self.q[(state1, action)] = old_utility + self.alpha * (reward + self.gamma * expected_value - old_utility)
+
+```
+
+
+
+
+### Résultats après 300000 itérations
+
+| Méthode          | Ratio Victoire chat / Victoire(souris+chats) |
+|------------------|--------------------|
+| Sarsa            |  0.175    |
+| Q-Learning       |  $valeur_qlearn$   |
+| Expected Sarsa   |  0.15 |
+
+Les valeurs ci-dessus représentent les performances des différentes méthodes d'apprentissage par renforcement après 400000 itérations. 
